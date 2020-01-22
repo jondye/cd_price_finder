@@ -1,6 +1,7 @@
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 
+
 class MusicMagpie:
     def __init__(self):
         self.driver = webdriver.Chrome()
@@ -20,4 +21,21 @@ class MusicMagpie:
             price = float(row.find_element_by_class_name('col_Price').text)
             r.append((barcode, name, price))
         return r
+
+
+class Ziffit:
+    def __init__(self):
+        self.driver = webdriver.Chrome()
+        self.driver.get('https://www.ziffit.com/en-gb/basket')
+
+    def add_barcode(self, barcode):
+        barcode_box = self.driver.find_element_by_name('barcode')
+        barcode_box.send_keys(barcode)
+        barcode_box.send_keys(Keys.ENTER)
+
+
+class WeBuyBooks:
+    def __init__(self):
+        self.driver = webdriver.Chrome()
+        self.driver.get('https://www.webuybooks.co.uk/')
 
