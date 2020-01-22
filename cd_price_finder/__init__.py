@@ -39,3 +39,14 @@ class WeBuyBooks:
         self.driver = webdriver.Chrome()
         self.driver.get('https://www.webuybooks.co.uk/')
 
+
+class Zapper:
+    def __init__(self):
+        self.driver = webdriver.Chrome()
+        self.driver.get('https://zapper.co.uk/list-page/')
+
+
+class Momox:
+    def __init__(self):
+        self.driver = webdriver.Chrome()
+        self.driver.get('https://www.momox.co.uk/')
