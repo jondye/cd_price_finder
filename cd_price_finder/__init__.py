@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+import csv
+
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 
@@ -33,20 +36,60 @@ class Ziffit:
         barcode_box.send_keys(barcode)
         barcode_box.send_keys(Keys.ENTER)
 
+    def results(self):
+        r = []
+        for row in self.driver.find_elements_by_css_selector('.ziffittable tbody tr'):
+            name, barcode, _, price, _ = row.text.split('\n')
+            price = float(price.strip('£'))
+            r.append((barcode, name, price))
+        return r
+
 
 class WeBuyBooks:
     def __init__(self):
         self.driver = webdriver.Chrome()
-        self.driver.get('https://www.webuybooks.co.uk/')
+        self.driver.get('https://www.webuybooks.co.uk/selling-basket')
+
+    def add_barcode(self, barcode):
+        try_again_buttons = [b for b in self.driver.find_elements_by_class_name('button') if 'Try Again' in b.text]
+        if try_again_buttons:
+            try_again_buttons[0].click()  # dismiss modal
+        barcode_box = self.driver.find_element_by_name('isbn')
+        barcode_box.send_keys(barcode)
+        barcode_box.send_keys(Keys.ENTER)
+
+    def results(self):
+        try_again_buttons = [b for b in self.driver.find_elements_by_class_name('button') if 'Try Again' in b.text]
+        if try_again_buttons:
+            try_again_buttons[0].click()  # dismiss modal
+        r = []
+        for row in self.driver.find_elements_by_class_name('trrow'):
+            name, barcode = row.find_element_by_class_name('tdtitle').text.split('\n\n')
+            price = float(row.find_element_by_class_name('tdval').text.strip('£'))
+            r.append((barcode, name, price))
+        return r
 
 
 class Zapper:
     def __init__(self):
         self.driver = webdriver.Chrome()
         self.driver.get('https://zapper.co.uk/list-page/')
+        # turn of "recycling"
+        self.driver.find_element_by_class_name('react-switch').click()
+
+    def add_bacdode(self, barcode):
+        barcode_box = self.driver.find_element_by_id('form-field-name')
+        barcode_box.send_keys(barcode)
+        barcode_box.send_keys(Keys.ENTER)
 
 
 class Momox:
     def __init__(self):
         self.driver = webdriver.Chrome()
         self.driver.get('https://www.momox.co.uk/')
+
+
+def load_barcodes_from_csv(filename):
+    with open(filename, 'r') as f:
+        reader = csv.reader(f)
+        return [row[0] for row in reader]
