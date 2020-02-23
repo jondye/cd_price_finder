@@ -2,16 +2,20 @@
 import csv
 
 from selenium import webdriver
+from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support import expected_conditions as cond
+from selenium.webdriver.support.ui import WebDriverWait
 
 
 class MusicMagpie:
     def __init__(self):
         self.driver = webdriver.Chrome()
-        self.driver.get('https://www.musicmagpie.co.uk/start-selling/')
-        self.driver.find_element_by_class_name('sellMedia').click()
 
     def add_barcode(self, barcode):
+        if 'start-selling' not in self.driver.current_url:
+            self.driver.get('https://www.musicmagpie.co.uk/start-selling/')
+            self.driver.find_element_by_class_name('sellMedia').click()
         barcode_box = self.driver.find_element_by_class_name('mediaValTextbox')
         barcode_box.send_keys(barcode)
         barcode_box.send_keys(Keys.ENTER)
@@ -29,9 +33,10 @@ class MusicMagpie:
 class Ziffit:
     def __init__(self):
         self.driver = webdriver.Chrome()
-        self.driver.get('https://www.ziffit.com/en-gb/basket')
 
     def add_barcode(self, barcode):
+        if 'basket' not in self.driver.current_url:
+            self.driver.get('https://www.ziffit.com/en-gb/basket')
         barcode_box = self.driver.find_element_by_name('barcode')
         barcode_box.send_keys(barcode)
         barcode_box.send_keys(Keys.ENTER)
@@ -48,12 +53,11 @@ class Ziffit:
 class WeBuyBooks:
     def __init__(self):
         self.driver = webdriver.Chrome()
-        self.driver.get('https://www.webuybooks.co.uk/selling-basket')
 
     def add_barcode(self, barcode):
-        try_again_buttons = [b for b in self.driver.find_elements_by_class_name('button') if 'Try Again' in b.text]
-        if try_again_buttons:
-            try_again_buttons[0].click()  # dismiss modal
+        if 'selling-basket' not in self.driver.current_url:
+            self.driver.get('https://www.webuybooks.co.uk/selling-basket')
+
         barcode_box = self.driver.find_element_by_name('isbn')
         barcode_box.send_keys(barcode)
         barcode_box.send_keys(Keys.ENTER)
