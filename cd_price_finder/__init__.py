@@ -6,11 +6,13 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as cond
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium.common.exceptions import TimeoutException
 
 
 class MusicMagpie:
     def __init__(self):
         self.driver = webdriver.Chrome()
+        self.name = "MusicMagpie"
 
     def login(self, email, password):
         self.driver.get('https://www.musicmagpie.co.uk/login/')
@@ -52,6 +54,7 @@ class MusicMagpie:
 class Ziffit:
     def __init__(self):
         self.driver = webdriver.Chrome()
+        self.name = "Ziffit"
 
     def login(self, email, password):
         self.driver.get('https://www.ziffit.com/en-gb/log-in')
@@ -93,10 +96,23 @@ class Ziffit:
 class WeBuyBooks:
     def __init__(self):
         self.driver = webdriver.Chrome()
+        self.name = "WeBuyBooks"
+
+    def _close_popups(self):
+        close_buttons = self.driver.find_elements_by_class_name('cc-dismiss')
+        close_buttons += self.driver.find_elements_by_css_selector('button[data-dismiss=toast]')
+        for button in close_buttons:
+            try:
+                if button.is_displayed():
+                    WebDriverWait(self.driver, 10).until(cond.visibility_of(button))
+                    button.click()
+            except TimeoutException:
+                import ipdb
+                ipdb.set_trace()
 
     def login(self, email, password):
         self.driver.get('https://www.webuybooks.co.uk/log-in/')
-        self.driver.find_element_by_css_selector('a.cc-btn').click()
+        self._close_popups()
         self.driver.find_element_by_id('customer_email').send_keys(email)
         p = self.driver.find_element_by_id('password')
         p.send_keys(password)
@@ -106,21 +122,39 @@ class WeBuyBooks:
     def add_barcode(self, barcode):
         if 'selling-basket' not in self.driver.current_url:
             self.driver.get('https://www.webuybooks.co.uk/selling-basket')
+        self._close_popups()
 
         barcode_box = self.driver.find_element_by_name('isbn')
         barcode_box.send_keys(barcode)
         barcode_box.send_keys(Keys.ENTER)
+        modal = WebDriverWait(self.driver, 10).until(cond.visibility_of_element_located((By.CSS_SELECTOR, '.modal.show#error_modal')))
+        modal.find_element_by_class_name('button').click()
+
+    def remove_barcode(self, barcode):
+        if 'selling-basket' not in self.driver.current_url:
+            self.driver.get('https://www.webuybooks.co.uk/selling-basket')
+        self._close_popups()
+        for row in self.driver.find_elements_by_class_name('trrow'):
+            barcode = row.find_element_by_class_name('tdisbn').text
+            if barcode == barcode:
+                row.find_element_by_class_name('rejectOffer').click()
+                return
+        raise RuntimeError("Failed to find barcode")
 
     def results(self):
-        try_again_buttons = [b for b in self.driver.find_elements_by_class_name('button') if 'Try Again' in b.text]
-        if try_again_buttons:
-            try_again_buttons[0].click()  # dismiss modal
+        if 'selling-basket' not in self.driver.current_url:
+            self.driver.get('https://www.webuybooks.co.uk/selling-basket')
+        self._close_popups()
         r = []
         for row in self.driver.find_elements_by_class_name('trrow'):
-            name, barcode = row.find_element_by_class_name('tdtitle').text.split('\n\n')
-            price = float(row.find_element_by_class_name('tdval').text.strip('£'))
+            name = row.find_element_by_class_name('tdtitle').text
+            barcode = row.find_element_by_class_name('tdisbn').text
+            price = float(row.find_element_by_class_name('tdval').text.strip('Â£'))
             r.append((barcode, name, price))
         return r
+
+    def save_order(self):
+        pass
 
 
 class Zapper:
