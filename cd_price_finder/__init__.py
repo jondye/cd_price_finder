@@ -28,6 +28,13 @@ class MusicMagpie:
         barcode_box.send_keys(barcode)
         barcode_box.send_keys(Keys.ENTER)
 
+    def remove_barcode(self, barcode):
+        for row in self.driver.find_elements_by_class_name('rowDetails_Media'):
+            if row.find_element_by_class_name('col_Code').text == barcode:
+                row.find_element_by_id('btnDelete').click()
+                return
+        raise RuntimeError("Barcode not found")
+
     def results(self):
         r = []
         for row in self.driver.find_elements_by_class_name('rowDetails_Media'):
@@ -36,6 +43,10 @@ class MusicMagpie:
             price = float(row.find_element_by_class_name('col_Price').text)
             r.append((barcode, name, price))
         return r
+
+    def save_order(self):
+        self.driver.find_element_by_id('btnSaveOrder').click()
+        WebDriverWait(self.driver, 10).until(cond.url_contains('saved-orders'))
 
 
 class Ziffit:
@@ -57,14 +68,26 @@ class Ziffit:
         barcode_box = self.driver.find_element_by_name('barcode')
         barcode_box.send_keys(barcode)
         barcode_box.send_keys(Keys.ENTER)
+        WebDriverWait(self.driver, 10).until(cond.visibility_of_element_located((By.CSS_SELECTOR, 'div.alert')))
+
+    def remove_barcode(self, barcode):
+        for row in self.driver.find_elements_by_css_selector('.ziffittable tbody tr'):
+            _, barcode_elem, _, _, delete = row.find_elements_by_tag_name('th')
+            if barcode_elem.text == barcode:
+                delete.click()
+                return
+        raise RuntimeError("Barcode not found")
 
     def results(self):
         r = []
         for row in self.driver.find_elements_by_css_selector('.ziffittable tbody tr'):
-            name, barcode, _, price, _ = row.text.split('\n')
+            name, barcode, _, price, _ = [e.text for e in row.find_elements_by_tag_name('th')]
             price = float(price.strip('£'))
             r.append((barcode, name, price))
         return r
+
+    def save_order(self):
+        self.driver.find_element_by_css_selector('button[value="Save Trade for Later"]').click()
 
 
 class WeBuyBooks:
