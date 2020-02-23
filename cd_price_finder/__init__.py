@@ -12,6 +12,14 @@ class MusicMagpie:
     def __init__(self):
         self.driver = webdriver.Chrome()
 
+    def login(self, email, password):
+        self.driver.get('https://www.musicmagpie.co.uk/login/')
+        self.driver.find_element_by_css_selector('input[type=email]').send_keys(email)
+        p = self.driver.find_element_by_css_selector('input[type=password]')
+        p.send_keys(password)
+        p.send_keys(Keys.ENTER)
+        WebDriverWait(self.driver, 10).until(cond.url_contains('my-account'))
+
     def add_barcode(self, barcode):
         if 'start-selling' not in self.driver.current_url:
             self.driver.get('https://www.musicmagpie.co.uk/start-selling/')
@@ -34,6 +42,15 @@ class Ziffit:
     def __init__(self):
         self.driver = webdriver.Chrome()
 
+    def login(self, email, password):
+        self.driver.get('https://www.ziffit.com/en-gb/log-in')
+        self.driver.find_element_by_css_selector('button.cookiebtn').click()
+        self.driver.find_element_by_id('email').send_keys(email)
+        p = self.driver.find_element_by_id('password')
+        p.send_keys(password)
+        p.send_keys(Keys.ENTER)
+        WebDriverWait(self.driver, 10).until(cond.url_contains('myaccount'))
+
     def add_barcode(self, barcode):
         if 'basket' not in self.driver.current_url:
             self.driver.get('https://www.ziffit.com/en-gb/basket')
@@ -53,6 +70,15 @@ class Ziffit:
 class WeBuyBooks:
     def __init__(self):
         self.driver = webdriver.Chrome()
+
+    def login(self, email, password):
+        self.driver.get('https://www.webuybooks.co.uk/log-in/')
+        self.driver.find_element_by_css_selector('a.cc-btn').click()
+        self.driver.find_element_by_id('customer_email').send_keys(email)
+        p = self.driver.find_element_by_id('password')
+        p.send_keys(password)
+        p.send_keys(Keys.ENTER)
+        WebDriverWait(self.driver, 10).until(cond.url_contains('my-account'))
 
     def add_barcode(self, barcode):
         if 'selling-basket' not in self.driver.current_url:
